@@ -9,7 +9,7 @@ class Base(object):
         raise NotImplementedError('connect not implemented in base')
 
     def open(self):
-        self._transport.open()
+        raise NotImplementedError('open not implemented in base')
 
     def close(self):
-        self._transport.close()
+        raise NotImplementedError('close not implemented in base')
