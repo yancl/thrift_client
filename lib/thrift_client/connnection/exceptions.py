@@ -5,6 +5,6 @@ class TException(Exception):
     def __str__(self):
         return repr(self._value)
 
-class ParamInvalidException(TException):
+class ArgumentError(TException):
     def __init__(self, value):
-        super(ParamInvalidException, self).__init__(value)
+        super(ArgumentError, self).__init__(value)
