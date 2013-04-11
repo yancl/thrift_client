@@ -47,7 +47,9 @@ class Server(object):
 
     def _connect(self):
         if not self._connected:
+            self._connection.set_timeout(self._options['connect_timeout'])
             self._connection.connect()
+            self._connection.set_timeout(self._options['timeout'])
 
     def __str__(self):
         return self._conn_str
