@@ -1,5 +1,5 @@
 from connection import factory
-from datetime import datetime
+import utils
 
 class Server(object):
     def __init__(self, conn_str, client_class, options = {}):
@@ -22,13 +22,13 @@ class Server(object):
         
     def mark_down(self, til):
         self.close(True)
-        self._markdown_til = datetime.now() + til
+        self._markdown_til = utils.now() + til
 
     def is_up(self):
         return not self.is_down()
 
     def is_down(self):
-        if self._markdown_til and self._markdown_til > datetime.now():
+        if self._markdown_til and self._markdown_til > utils.now():
             return True
         return False
 
