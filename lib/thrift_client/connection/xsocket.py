@@ -10,15 +10,22 @@ class Socket(base.Base):
         self._transport.setTimeout(self._timeout*1000) #ms
         if self._transport_wrapper:
             self._transport = self._transport_wrapper(self._transport)
+        self._opened = False
+
+    def transport(self):
+        return self._transport
 
     def connect(self):
         self.open()
 
     def open(self):
-        self._transport.open()
+        if not self._opened:
+            self._transport.open()
+            self._opened = True
 
     def close(self):
-        self._transport.close()
+        if self._opened:
+            self._transport.close()
 
     def _parse_server(self, server):
         (host, port) = server.split(':')
