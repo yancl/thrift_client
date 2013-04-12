@@ -58,10 +58,3 @@ Reporting problems
 =============
 
 The Github issue tracker is {here}[http://github.com/yancl/thrift_client/issues].
-
-License
-=============
-
-Copyright 2009-2012 Twitter, Inc. See included LICENSE file.
-
-The public certificate for this gem is here[http://blog.evanweaver.com/files/evan_weaver-original-public_cert.pem].
