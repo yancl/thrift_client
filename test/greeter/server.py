@@ -26,4 +26,8 @@ class Server(object):
         self._server.serve()
 
 if __name__ == '__main__':
-    Server(host='127.0.0.1', port=9500).serve()
+    import sys
+    if len(sys.argv) == 2:
+        Server(host='127.0.0.1', port=int(sys.argv[1])).serve()
+    else:
+        print 'python server port'
