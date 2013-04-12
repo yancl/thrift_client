@@ -1,4 +1,4 @@
-from datetime import datetime
+import time
 
 def now():
-    return datetime.now()
+    return int(time.time())

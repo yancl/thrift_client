@@ -1,5 +1,6 @@
 class Base(object):
     def __init__(self, transport, transport_wrapper, server, timeout):
+        self._raw_transport = transport
         self._transport = transport
         self._transport_wrapper = transport_wrapper
         self._server = server

@@ -16,7 +16,7 @@ class Server(object):
         if not self._client:
             self._connect()
             transport = self._connection.transport()
-            protocol = self._options['protocol'](tranport)
+            protocol = self._options['protocol'](transport)
             self._client = self._client_class(protocol)
         return self._client
         

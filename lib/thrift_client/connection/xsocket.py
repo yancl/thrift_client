@@ -2,11 +2,11 @@ import base
 import exceptions
 
 class Socket(base.Base):
-    #def __init__(self, transport, transport_wrapper, server, timeout):
     def __init__(self, *args):
         super(Socket, self).__init__(*args)
         host, port = self._parse_server(self._server)
         self._transport = self._transport(host, port)
+        self._raw_transport = self._transport
         self._transport.setTimeout(self._timeout*1000) #ms
         if self._transport_wrapper:
             self._transport = self._transport_wrapper(self._transport)
@@ -29,10 +29,10 @@ class Socket(base.Base):
 
     def set_timeout(self, timeout):
         self._timeout = timeout
-        self._transport.setTimeout(self._timeout*1000)
+        self._raw_transport.setTimeout(self._timeout*1000)
 
     def _parse_server(self, server):
         (host, port) = server.split(':')
         if not (host and port):
             raise exceptions.ArgumentError('server must be of form host:port')
-        return (host, port)
+        return (host, int(port))

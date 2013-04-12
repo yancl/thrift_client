@@ -78,7 +78,7 @@ class AbstractThriftClient(object):
                 self._last_client = self._client
                 self._do_callbacks('postconnect', self)
                 break
-            except IOError, TTransportException:
+            except (IOError, TTransportException):
                 self.disconnect(True)
                 timeout = self._timeout(method_name)
                 if timeout and utils.now() - start_time > timeout:
@@ -95,7 +95,7 @@ class AbstractThriftClient(object):
 
     def _hook_methods(self):
         def _wrapper(method_name):
-            def _(self, *args, **kwargs):
+            def _(*args, **kwargs):
                 return self._handled_proxy(method_name, *args, **kwargs)
             return _
 
@@ -118,7 +118,7 @@ class AbstractThriftClient(object):
         length = len(self._servers)
         for i in xrange(0, length):
             cur = (1 + self._server_idx + i) % length 
-            if self._server_list[cur].up():
+            if self._server_list[cur].is_up():
                 self._server_idx = cur
                 return self._server_list[cur]
         self._no_servers_available()
@@ -126,10 +126,10 @@ class AbstractThriftClient(object):
     def _no_servers_available(self):
         raise exceptions.NoServersAvailable("No live servers in %s" % ','.join(self._servers))
 
-    def _timeout(method=None):
+    def _timeout(self, method=None):
         return self._options['timeout_overrides'].get(method, 0) or self._options['timeout']
 
-    def _handled_proxy(method_name, *args, **kwargs):
+    def _handled_proxy(self, method_name, *args, **kwargs):
         if not self._client:
             self.connect(method_name)
         tries = self._options['retry_overrides'].get(method_name, 0) or (self._options['retries'] + 1)
