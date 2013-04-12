@@ -11,4 +11,4 @@ class ArgumentError(XException):
 
 class NoServersAvailable(XException):
     def __init__(self, value):
-        super(ArgumentError, self).__init__(value)
+        super(NoServersAvailable, self).__init__(value)

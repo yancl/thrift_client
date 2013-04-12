@@ -30,6 +30,4 @@ if __name__ == '__main__':
     from protocol.genpy.tservices import TServices
     thrift_client = ThriftClient(client_class=TServices.Client,
                                  servers=['127.0.0.1:9523','127.0.0.1:9524'],
-                                 options={'retries':2})
-    #print dir(thrift_client)
-    print thrift_client.get_user(3)
+                                 options={'retries':2, 'server_max_requests':1000})
