@@ -16,11 +16,15 @@ Usage
 
 Instantiate a client:
 
-  client = ThriftClient(CassandraRb::Client, ['127.0.0.1:9160',], options={'retries':2})
+```python
+client = ThriftClient(CassandraRb::Client, ['127.0.0.1:9160',], options={'retries':2})
+```
 
 You can then make calls to the server via the <tt>client</tt> instance as if was your internal Thrift client. The connection will be opened lazily and methods will be proxied through.
 
-  client.get_string_list_property("keyspaces")
+```python
+client.get_string_list_property("keyspaces")
+```
 
 On failures, the client will try the remaining servers in the list before giving up. See ThriftClient for more.
 
@@ -48,7 +52,7 @@ To contribute changes:
 
 1. Fork the project
 2. make your change, adding tests
-3. send a pull request to me(@yancl)
+3. send a pull request to me(@yancl,@dlutcat)
 
 Reporting problems
 =============
