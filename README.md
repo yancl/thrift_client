@@ -9,7 +9,7 @@ Features
 * Transparent connection management
 * Configurable failover and retry backoff
 
-The Github source repository is {here}[http://github.com/yancl/thrift_client/]. Patches and contributions are very welcome.
+The Github source repository is [here](http://github.com/yancl/thrift_client/). Patches and contributions are very welcome.
 
 Usage
 =============
@@ -57,4 +57,4 @@ To contribute changes:
 Reporting problems
 =============
 
-The Github issue tracker is {here}[http://github.com/yancl/thrift_client/issues].
+The Github issue tracker is [here](http://github.com/yancl/thrift_client/issues).
