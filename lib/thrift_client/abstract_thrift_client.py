@@ -107,7 +107,7 @@ class AbstractThriftClient(object):
             fn = getattr(self._client_class, name)
             if callable(fn):
                 self._client_methods.append(name)
-            setattr(self, name, _wrapper(name))
+                setattr(self, name, _wrapper(name))
 
     def _do_callbacks(self, callback_type, *args):
         callbacks = self._callbacks.get(callback_type, [])
