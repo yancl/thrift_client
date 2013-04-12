@@ -17,7 +17,7 @@ Usage
 Instantiate a client:
 
 ```python
-client = ThriftClient(CassandraRb::Client, ['127.0.0.1:9160',], options={'retries':2})
+client = ThriftClient(Cassandra.Client, ['127.0.0.1:9160',], options={'retries':2})
 ```
 
 You can then make calls to the server via the <tt>client</tt> instance as if was your internal Thrift client. The connection will be opened lazily and methods will be proxied through.
