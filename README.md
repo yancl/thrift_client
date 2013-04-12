@@ -1,4 +1,5 @@
-== thrift_client
+thrift_client
+=============
 
 A Thrift client wrapper that encapsulates some common failover behavior(python version of twitter thrift client).
 
