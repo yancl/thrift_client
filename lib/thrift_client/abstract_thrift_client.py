@@ -64,10 +64,11 @@ class AbstractThriftClient(object):
         self._hook_methods()
         
     def add_callback(self, callback_type, f):
-        if callback_type in ('postconnect', 'before_method', 'on_exception'):
+        if callback_type in ('post_connect', 'before_method', 'on_exception'):
             if callback_type not in self._callbacks:
                 self._callbacks[callback_type] = []
             self._callbacks[callback_type].append(f)
+        return self
 
     def connect(self, method_name):
         start_time = utils.now()
@@ -76,7 +77,7 @@ class AbstractThriftClient(object):
                 self._current_server = self._next_live_server()
                 self._client = self._current_server.client()
                 self._last_client = self._client
-                self._do_callbacks('postconnect', self)
+                self._do_callbacks('post_connect', self)
                 break
             except (IOError, TTransportException), e:
                 self.disconnect(True)
