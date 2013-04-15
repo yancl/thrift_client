@@ -78,7 +78,7 @@ class AbstractThriftClient(object):
                 self._last_client = self._client
                 self._do_callbacks('postconnect', self)
                 break
-            except (IOError, TTransportException):
+            except (IOError, TTransportException), e:
                 self.disconnect(True)
                 timeout = self._timeout(method_name)
                 if timeout and utils.now() - start_time > timeout:
@@ -92,6 +92,12 @@ class AbstractThriftClient(object):
         self._client = None
         self._current_server = None
         self._req_count = 0
+
+    def inspect(self):
+        return ("<%(class)s(%(client_class)s) @current_server=%(current_server)s>" % 
+                {'class':self.__class__,
+                 'client_class':self._client_class,
+                 'current_server':self._current_server})
 
     def _hook_methods(self):
         def _wrapper(method_name):
@@ -140,24 +146,24 @@ class AbstractThriftClient(object):
                 f = getattr(self._client, method_name)
                 return f(*args, **kwargs)
             except self._options['exception_class_overrides'],e:
-                self._raise_or_default(e, method_name)
+                return self._raise_or_default(e, method_name)
             except self._options['exception_classes'],e:
                 self.disconnect(True)
                 tries -= 1
                 if tries <= 0:
-                    self._raise_or_default(e, method_name)
+                    return self._raise_or_default(e, method_name)
             except Exception,e:
-                self._raise_or_default(e, method_name)
+                return self._raise_or_default(e, method_name)
             finally:
                 if self._server_max_req and self._req_count >= self._server_max_req:
                     self.disconnect()
 
-    def _raise_or_default(e, method_name):
+    def _raise_or_default(self, e, method_name):
         if self._options['raise']:
             self._raise_wrapped_error(e, method_name)
         else:
-            return self._options['defaults'][method_name]
+            return self._options['defaults'].get(method_name, None)
 
-    def _raise_wrapped_error(e, method_name):
+    def _raise_wrapped_error(self, e, method_name):
         self._do_callbacks('on_exception', e, method_name)
         raise e
