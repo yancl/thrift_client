@@ -211,7 +211,6 @@ class TestThriftClient(object):
                 pass
             t1 = time.time()
             real = t1 - t0
-            print 'real:',real
             ok_(real > log_timeout)
         finally:
             q.put(False)
@@ -291,6 +290,7 @@ class TestThriftClient(object):
             try:
                 import socket
                 sock = socket.socket()
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 sock.bind(('127.0.0.1', port))
                 sock.listen(10)
                 while q.get():
