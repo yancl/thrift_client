@@ -136,12 +136,17 @@ class AbstractThriftClient(object):
     def _timeout(self, method=None):
         return self._options['timeout_overrides'].get(method, 0) or self._options['timeout']
 
+    def _has_timeout(self):
+        return self._options['timeout_overrides']
+
     def _handled_proxy(self, method_name, *args, **kwargs):
         tries = self._options['retry_overrides'].get(method_name, 0) or (self._options['retries'] + 1)
         while tries > 0:
             try:
                 if not self._client:
                     self.connect(method_name)
+                if self._has_timeout():
+                    self._current_server.set_timeout(self._timeout(method_name))
                 self._req_count += 1
                 self._do_callbacks('before_method', method_name)
                 f = getattr(self._client, method_name)

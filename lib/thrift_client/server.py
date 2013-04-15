@@ -20,6 +20,9 @@ class Server(object):
             self._client = self._client_class(protocol)
         return self._client
         
+    def set_timeout(self, timeout):
+        self._connection.set_timeout(timeout)
+
     def mark_down(self, til):
         self.close(True)
         self._markdown_til = utils.now() + til

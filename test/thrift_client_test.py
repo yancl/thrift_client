@@ -140,6 +140,83 @@ class TestThriftClient(object):
             client.disconnect()
         eq_(0, m['calledcnt'])
 
+    def test_socket_timeout(self):
+        try:
+            import time
+            (q, threads) = self._stub_server(self._port)
+            t0 = time.time()
+            try:
+                self._options.update({'timeout':1, 'connect_timeout':0.5})
+                client = ThriftClient(Client, ['127.0.0.1:%d' % self._port], self._options).greeting('someone')
+            except IOError: # socket.timeout subs IOError
+                pass
+            t1 = time.time()
+            real = t1 - t0
+            ok_(real > 0.5 and real < 1.05)
+        finally:
+            q.put(False)
+            self._stop_server(threads)
+
+    def test_framed_transport_timeout(self):
+        try:
+            import time
+            (q, threads) = self._stub_server(self._port)
+            t0 = time.time()
+            try:
+                self._options.update({'timeout':self._timeout, 'connect_timeout':self._timeout})
+                client = ThriftClient(Client, ['127.0.0.1:%d' % self._port], self._options).greeting('someone')
+            except IOError: # socket.timeout subs IOError
+                pass
+            t1 = time.time()
+            real = t1 - t0
+            ok_(real > self._timeout)
+        finally:
+            q.put(False)
+            self._stop_server(threads)
+
+    def test_buffered_transport_timeout(self):
+        try:
+            from thrift.transport import TTransport
+            import time
+            (q, threads) = self._stub_server(self._port)
+            t0 = time.time()
+            try:
+                self._options.update({  'timeout':self._timeout,
+                                        'connect_timeout':self._timeout,
+                                        'transport_wrapper':TTransport.TBufferedTransport})
+                client = ThriftClient(Client, ['127.0.0.1:%d' % self._port], self._options).greeting('someone')
+            except IOError: # socket.timeout subs IOError
+                pass
+            t1 = time.time()
+            real = t1 - t0
+            ok_(real > self._timeout)
+        finally:
+            q.put(False)
+            self._stop_server(threads)
+
+    def test_buffered_transport_timeout_override(self):
+        try:
+            # FIXME Large timeout values always are applied twice for some bizarre reason
+            log_timeout = 4 * self._timeout
+            from thrift.transport import TTransport
+            import time
+            (q, threads) = self._stub_server(self._port)
+            t0 = time.time()
+            try:
+                self._options.update({  'timeout':self._timeout,
+                                        'timeout_overrides':{'greeting': log_timeout},
+                                        'transport_wrapper':TTransport.TBufferedTransport})
+                client = ThriftClient(Client, ['127.0.0.1:%d' % self._port], self._options).greeting('someone')
+            except IOError: # socket.timeout subs IOError
+                pass
+            t1 = time.time()
+            real = t1 - t0
+            print 'real:',real
+            ok_(real > log_timeout)
+        finally:
+            q.put(False)
+            self._stop_server(threads)
+
     def test_retry_period(self):
         self._options.update({'server_retry_period':1, 'retries':2})
         client = ThriftClient(Client, self._servers[0:2], self._options)
@@ -203,3 +280,36 @@ class TestThriftClient(object):
         # Until we max it out, too.
         client.greeting("someone")
         ok_(last_client, client._last_client)
+
+    def _stub_server(self, port):
+        import Queue
+        q = Queue.Queue()
+        q.put(True)
+        def looper(q):
+            sock = None
+            socks = []
+            try:
+                import socket
+                sock = socket.socket()
+                sock.bind(('127.0.0.1', port))
+                sock.listen(10)
+                while q.get():
+                    (s, a) = sock.accept()
+                    socks.append(s)
+            finally:
+                #clean up
+                for sock in socks:
+                    sock.close()
+                if sock:
+                    sock.close()
+
+        import threading
+        t = threading.Thread(target=functools.partial(looper, q))
+        t.setDaemon(True)
+        t.start()
+        threads = [t]
+        return (q, threads)
+
+    def _stop_server(self, threads):
+        for thread in threads:
+            thread.join()
