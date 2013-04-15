@@ -3,10 +3,9 @@ sys.path.insert(0, '../')
 
 import subprocess
 import time
-from lib import ThriftClient, ArgumentError, NoServersAvailable
+from lib import ThriftClient
 from greeter.greeter import Client
-from nose.tools import raises, ok_, eq_
-import functools
+from nose.tools import ok_, eq_
 
 class TestMultiServer(object):
     def setUp(self):
