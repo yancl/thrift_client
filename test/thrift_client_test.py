@@ -32,12 +32,10 @@ class TestThriftClient(object):
         eq_("<<class 'lib.client.ThriftClient'>(greeter.greeter.Client) @current_server=127.0.0.1:19991>",
             client.inspect())
  
-    @raises(NoServersAvailable)
     def test_dont_raise(self):
         self._options.update({'raise':False})
         ThriftClient(Client, [self._servers[0]], self._options).greeting('world')
 
-    @raises(NoServersAvailable)
     def test_dont_raise_with_defaults(self):
         self._options.update({'raise':False, 'defaults':{'greeting':1}})
         v = ThriftClient(Client, [self._servers[0]], self._options).greeting('world')
@@ -88,3 +86,23 @@ class TestThriftClient(object):
         client.yo("dawg")
         client.disconnect()
         eq_({'greeting':1, 'yo':2}, before_method_counts)
+
+    def test_on_exception_cb(self):
+        def on_exception(on_exception_counts, e, method_name):
+            try:
+                on_exception_counts[method_name][e.__class__.__name__] += 1
+            except KeyError:
+                if method_name not in on_exception_counts:
+                    on_exception_counts[method_name] = {}
+                if e.__class__.__name__ not in on_exception_counts[method_name]:
+                    on_exception_counts[method_name][e.__class__.__name__] = 1
+
+        on_exception_counts = {}
+        client = ThriftClient(Client, self._servers[0:2], self._options)
+        r = client.add_callback('on_exception', functools.partial(on_exception, on_exception_counts))
+        eq_(client, r)
+        try:
+            client.greeting("someone")
+        except NoServersAvailable:
+            client.disconnect()
+        eq_({'greeting': {'NoServersAvailable': 1}}, on_exception_counts)
