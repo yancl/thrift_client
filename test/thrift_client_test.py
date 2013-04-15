@@ -70,3 +70,21 @@ class TestThriftClient(object):
         client.greeting("someone")
         client.disconnect()
         eq_(1, m['calledcnt'])
+
+    def test_before_method_cb(self):
+        def before_method(m, method_name):
+            try:
+                m[method_name] += 1
+            except KeyError,e:
+                m[method_name] = 1
+
+        before_method_counts = {}
+
+        client = ThriftClient(Client, self._servers, self._options)
+        r = client.add_callback('before_method', functools.partial(before_method, before_method_counts))
+        eq_(client, r)
+        client.greeting("someone")
+        client.yo("dude")
+        client.yo("dawg")
+        client.disconnect()
+        eq_({'greeting':1, 'yo':2}, before_method_counts)
