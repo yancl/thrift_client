@@ -23,11 +23,3 @@ class ThriftClient(AbstractThriftClient):
     """
     def __init__(self, client_class, servers, options={}):
         super(ThriftClient, self).__init__(client_class, servers, options)
-
-if __name__ == '__main__':
-    import sys
-    sys.path.insert(0, '/home/yancl/env/web/kantuban/')
-    from protocol.genpy.tservices import TServices
-    thrift_client = ThriftClient(client_class=TServices.Client,
-                                 servers=['127.0.0.1:9523','127.0.0.1:9524'],
-                                 options={'retries':2, 'server_max_requests':1000})
