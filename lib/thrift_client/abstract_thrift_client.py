@@ -50,7 +50,7 @@ class AbstractThriftClient(object):
         self._DEFAULTS = dict(DEFAULTS)
         self._DEFAULTS.update(options)
         self._options = self._DEFAULTS
-        self._server_list = [Server( conn_str=server, 
+        self._server_list = [Server(conn_str=server, 
                                     client_class=client_class,
                                     options=self._options) for server in servers]
         self._server_idx = 0
