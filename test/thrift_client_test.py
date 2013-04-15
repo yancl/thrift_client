@@ -10,7 +10,6 @@ import functools
 
 class TestThriftClient(object):
     def setUp(self):
-        print 'set up resources'
         self._servers = ["127.0.0.1:19991", "127.0.0.1:19992", "127.0.0.1:19993"]
         self._port = 19991
         self._timeout = 0.2
@@ -19,7 +18,6 @@ class TestThriftClient(object):
         time.sleep(1)
 
     def tearDown(self):
-        print 'tear down resources'
         self._popen.kill()
         self._popen.wait()
 
@@ -106,3 +104,102 @@ class TestThriftClient(object):
         except NoServersAvailable:
             client.disconnect()
         eq_({'greeting': {'NoServersAvailable': 1}}, on_exception_counts)
+
+    def test_unknown_cb(self):
+        def _():
+            assert False
+        client = ThriftClient(Client, self._servers, self._options)
+        r = client.add_callback('unknown', _)
+        eq_(r, None) 
+
+    def test_multiple_cb(self):
+        def post_connect(m, handle):
+            m['calledcnt'] += 1
+            eq_(handle, client)
+
+        m = {'calledcnt':0}
+        client = ThriftClient(Client, self._servers, self._options)
+        for i in xrange(2):
+            r = client.add_callback('post_connect', functools.partial(post_connect, m))
+            eq_(client, r)
+        client.greeting("someone")
+        client.disconnect()
+        eq_(2, m['calledcnt'])
+
+    def test_no_servers_eventually_raise(self):
+        def post_connect(m, handle):
+            m['calledcnt'] += 1
+            eq_(handle, client)
+
+        m = {'calledcnt':0}
+        client = ThriftClient(Client, self._servers[0:2], self._options)
+        r = client.add_callback('post_connect', functools.partial(post_connect, m))
+        try:
+            client.greeting('someone')
+        except NoServersAvailable:
+            client.disconnect()
+        eq_(0, m['calledcnt'])
+
+    def test_retry_period(self):
+        self._options.update({'server_retry_period':1, 'retries':2})
+        client = ThriftClient(Client, self._servers[0:2], self._options)
+        try:
+            client.greeting('someone')
+        except NoServersAvailable:
+            pass
+
+        import time
+        time.sleep(1.1)
+
+        try:
+            client.greeting('someone')
+        except NoServersAvailable:
+            pass
+
+    @raises(NoServersAvailable)
+    def test_connect_retry_period(self):
+        self._options.update({'server_retry_period':0})
+        client = ThriftClient(Client, [self._servers[0]], self._options)
+        client.connect()
+
+    def test_client_with_retry_period_drops_servers(self):
+        self._options.update({'server_retry_period':1, 'retries':2})
+        client = ThriftClient(Client, [self._servers[0]], self._options)
+        try:
+            client.greeting("someone")
+        except NoServersAvailable:
+            pass
+        import time
+        time.sleep(1.1)
+        try:
+            client.greeting("someone")
+        except NoServersAvailable:
+            pass
+
+    def test_oneway_method(self):
+        self._options.update({'server_max_requests':2, 'retries':2})
+        client = ThriftClient(Client, self._servers, self._options)
+        r = client.yo('dude')
+
+    def test_server_max_requests_with_downed_servers(self):
+        self._options.update({'server_max_requests':2, 'retries':2})
+        client = ThriftClient(Client, self._servers, self._options)
+        client.greeting("someone")
+        last_client = client._last_client
+
+        client.greeting("someone")
+        eq_(last_client, client._last_client)
+
+        # This next call maxes out the requests for that "client" object
+        # and moves on to the next.
+        client.greeting("someone")
+        new_client = client._last_client
+        ok_(last_client, new_client)
+
+        # And here we should still have the same client as the last one...
+        client.greeting("someone")
+        eq_(new_client, client._last_client)
+
+        # Until we max it out, too.
+        client.greeting("someone")
+        ok_(last_client, client._last_client)

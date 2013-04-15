@@ -68,9 +68,9 @@ class AbstractThriftClient(object):
             if callback_type not in self._callbacks:
                 self._callbacks[callback_type] = []
             self._callbacks[callback_type].append(f)
-        return self
+            return self
 
-    def connect(self, method_name):
+    def connect(self, method_name=None):
         start_time = utils.now()
         while True:
             try:
