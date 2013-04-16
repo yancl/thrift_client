@@ -34,6 +34,28 @@ class TestThriftClient(object):
         self._options.update({'raise':False})
         ThriftClient(Client, [self._servers[0]], self._options).greeting('world')
 
+    def test_retries_correct_number_of_times(self):
+        def disconnect_wrapper(f, m, args):
+            f()
+            if args:
+                m['times_called'] += 1
+
+        try:
+            (q, threads) = self._stub_server(self._port)
+            m = {'times_called':0}
+            p = {'timeout':self._timeout, 'retries':4, 'server_retry_period':0}
+            try:
+                self._options.update(p)
+                client = ThriftClient(Client, ['127.0.0.1:%d' % self._port], self._options)
+                client.disconnect = functools.partial(disconnect_wrapper, client.disconnect, m)
+                client.greeting('someone')
+            except IOError: # socket.timeout subs IOError
+                pass
+            eq_(m['times_called'], p['retries']+1)
+        finally:
+            q.put(False)
+            self._stop_server(threads)
+
     def test_dont_raise_with_defaults(self):
         self._options.update({'raise':False, 'defaults':{'greeting':1}})
         v = ThriftClient(Client, [self._servers[0]], self._options).greeting('world')
