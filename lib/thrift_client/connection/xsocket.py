@@ -28,8 +28,9 @@ class Socket(base.Base):
             self._transport.close()
 
     def set_timeout(self, timeout):
-        self._timeout = timeout
-        self._raw_transport.setTimeout(self._timeout*1000)
+        if timeout != self._timeout:
+            self._timeout = timeout
+            self._raw_transport.setTimeout(self._timeout*1000)
 
     def _parse_server(self, server):
         (host, port) = server.split(':')
