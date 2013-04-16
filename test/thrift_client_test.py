@@ -3,7 +3,7 @@ sys.path.insert(0, '../')
 
 import subprocess
 import time
-from lib import ThriftClient, ArgumentError, NoServersAvailable
+from thrift_client import ThriftClient, ArgumentError, NoServersAvailable
 from greeter.greeter import Client
 from nose.tools import raises, ok_, eq_
 import functools
@@ -27,7 +27,7 @@ class TestThriftClient(object):
 
     def test_inspect(self):
         client = ThriftClient(Client, [self._servers[0]], self._options)
-        eq_("<<class 'lib.client.ThriftClient'>(greeter.greeter.Client) @current_server=127.0.0.1:19991>",
+        eq_("<<class 'thrift_client.thrift_client.ThriftClient'>(greeter.greeter.Client) @current_server=127.0.0.1:19991>",
             client.inspect())
  
     def test_dont_raise(self):

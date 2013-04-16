@@ -3,7 +3,7 @@ sys.path.insert(0, '../')
 
 import subprocess
 import time
-from lib import ThriftClient
+from thrift_client import ThriftClient
 from greeter.greeter import Client
 from nose.tools import ok_, eq_
 

@@ -1,4 +1,4 @@
-from thrift_client.abstract_thrift_client import AbstractThriftClient
+from client.abstract_thrift_client import AbstractThriftClient
 class ThriftClient(AbstractThriftClient):
     """
     Create a new ThriftClient instance. Accepts an internal Thrift client class (such as CassandraRb::Client), a list of servers with ports, and optional parameters.
