@@ -26,6 +26,7 @@ class Socket(base.Base):
     def close(self):
         if self._opened:
             self._transport.close()
+            self._opened = False
 
     def set_timeout(self, timeout):
         if timeout != self._timeout:
