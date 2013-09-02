@@ -87,8 +87,9 @@ class AbstractThriftClient(object):
 
     def disconnect(self, error=False):
         if self._current_server:
-            if error:
+            if error and self._current_server.incr_reconnect_times() > 1:
                 self._current_server.mark_down(self._options['server_retry_period'])
+                self._current_server.reset_reconnect_times()
             self._current_server.close()
         self._client = None
         self._current_server = None

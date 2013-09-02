@@ -10,6 +10,7 @@ class Server(object):
         self._client = None
         self._connected = False
         self._connection = self._new_connection()
+        self._host_reconnect_times = 0
 
     def client(self):
         #lazy connection
@@ -34,6 +35,13 @@ class Server(object):
         if self._markdown_til and self._markdown_til > utils.now():
             return True
         return False
+
+    def incr_reconnect_times(self):
+        self._host_reconnect_times += 1
+        return self._host_reconnect_times
+
+    def reset_reconnect_times(self):
+        self._host_reconnect_times = 0
 
     def close(self, teardown=False):
         if teardown:
